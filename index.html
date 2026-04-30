@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Matrix Tetris Mobile</title>
+    <style>
+        :root { --neon: #0f0; --neon-dim: #0a0; --bg: #000; --console-bg: #1a1a1a; }
+        * { box-sizing: border-box; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        body {
+            background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace;
+            margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 5px;
+        }
+        .console {
+            background: linear-gradient(145deg, #2a2a2a, #111); border: 3px solid #444;
+            border-radius: 30px 30px 80px 30px; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 10px rgba(0,255,0,0.1);
+            max-width: 340px; width: 100%;
+        }
+        .screen {
+            background: #000; border: 8px solid #222; border-radius: 10px;
+            padding: 12px; display: flex; gap: 12px; width: 100%;
+            box-shadow: inset 0 0 20px #000;
+        }
+        #game { border: 1px solid var(--neon-dim); background: #000; display: block; }
+        .side { display: flex; flex-direction: column; gap: 8px; width: 90px; }
+        .box { background: #080808; border: 1px solid #333; padding: 6px; text-align: center; border-radius: 6px; }
+        .label { font-size: 9px; color: var(--neon); text-transform: uppercase; margin-bottom: 3px; font-weight: bold; }
+        .value { font-size: 16px; font-weight: bold; color: #fff; text-shadow: 0 0 5px var(--neon); }
+        .value.top { color: #ff0; text-shadow: 0 0 5px #ff0; }
+        #next { border: 1px solid #030; background: #000; display: block; margin: 0 auto; }
+        
+        .controls {
+            margin-top: 15px; width: 100%; display: flex; justify-content: space-between;
+            align-items: flex-start; padding: 0 5px; position: relative;
+        }
+        .matrix-label {
+            position: absolute; top: -25px; left: 10px; font-size: 14px; font-weight: bold;
+            color: var(--neon); text-shadow: 0 0 8px var(--neon); letter-spacing: 2px;
+        }
+        .d-pad {
+            display: grid; grid-template-columns: repeat(3, 45px); grid-template-rows: repeat(3, 45px);
+            gap: 4px; margin-top: 5px;
+        }
+        .d-btn {
+            background: #222; border: 1px solid #444; color: var(--neon);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; border-radius: 8px; user-select: none; cursor: pointer;            transition: background 0.05s;
+        }
+        .d-btn:active, .d-btn.active { background: var(--neon); color: #000; }
+        .d-up { grid-column: 2; grid-row: 1; }
+        .d-left { grid-column: 1; grid-row: 2; }
+        .d-right { grid-column: 3; grid-row: 2; }
+        .d-down { grid-column: 2; grid-row: 3; }
+        
+        .btn-rot {
+            width: 70px; height: 70px; background: linear-gradient(145deg, #c00, #800);
+            border: 3px solid #500; border-radius: 50%; color: #fff; font-weight: bold;
+            font-size: 13px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; user-select: none; margin-top: 10px; margin-left: -15px;
+            box-shadow: 0 4px 0 #400; transition: transform 0.03s;
+        }
+        .btn-rot:active { transform: scale(0.97); }
+        
+        .action-row { display: flex; gap: 10px; margin-top: 12px; width: 100%; justify-content: center; }
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold;
+            font-size: 13px; cursor: pointer; color: #fff;
+        }
+        .btn-pause { background: #444; }
+        .btn-reset { background: #c00; }
+        .btn:active { opacity: 0.85; }
+        
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 200;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #overlay h1 { color: var(--neon); margin: 0 0 20px; text-shadow: 0 0 10px var(--neon); }
+        .input-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .input-row label { font-size: 14px; }
+        #startSpeed {
+            width: 50px; padding: 8px; background: #000; border: 2px solid var(--neon);
+            color: var(--neon); text-align: center; font-size: 18px; border-radius: 4px;
+        }
+        .start-btn {
+            background: var(--neon); color: #000; padding: 12px 35px; border: none;
+            font-weight: bold; font-size: 16px; cursor: pointer; border-radius: 6px;
+            margin-top: 15px;
+        }
+        .pause-msg {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 24px; font-weight: bold; color: #fff; background: rgba(0,80,0,0.85);
+            padding: 12px 25px; border-radius: 8px; display: none; pointer-events: none; z-index: 60;
+        }
+        .speed-display {
+            font-size: 11px; color: #0a0; text-align: center; margin-top: 4px;        }
+        @media (max-height: 700px) {
+            .console { padding: 15px; border-radius: 25px 25px 70px 25px; }
+            .screen { padding: 8px; gap: 8px; }
+            .d-pad { grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); }
+            .btn-rot { width: 60px; height: 60px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="overlay">
+    <h1>MATRIX TETRIS</h1>
+    <div class="label" style="color:#ff0">РЕКОРД: <span id="hs_overlay" class="value top">0</span></div>
+    <div class="input-row">
+        <label for="startSpeed">СКОРОСТЬ (0-10):</label>
+        <input type="number" id="startSpeed" min="0" max="10" value="0">
+    </div>
+    <button class="start-btn" onclick="game.start()">НАЧАТЬ</button>
+</div>
+
+<div class="console">
+    <div class="pause-msg" id="pauseMsg">ПАУЗА</div>
+    <div class="screen">
+        <canvas id="game" width="200" height="400"></canvas>
+        <div class="side">
+            <div class="box">
+                <div class="label">NEXT</div>
+                <canvas id="next" width="80" height="80"></canvas>
+            </div>
+            <div class="box"><div class="label">TOP</div><div id="hs" class="value top">0</div></div>
+            <div class="box"><div class="label">SCORE</div><div id="score" class="value">0</div></div>
+            <div class="box">
+                <div class="label">SPEED</div>
+                <div id="speedVal" class="value">100%</div>
+                <div class="speed-display" id="speedPct">+0%</div>
+            </div>
+            <button class="btn btn-pause" onclick="game.togglePause()" style="margin-top:auto">ПАУЗА</button>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="matrix-label">MATRIX</div>
+        <div class="d-pad">
+            <div class="d-btn d-up" data-action="hardDrop">⚡</div>
+            <div class="d-btn d-left" data-action="left">◀</div>
+            <div style="visibility:hidden"></div>
+            <div class="d-btn d-right" data-action="right">▶</div>
+            <div class="d-btn d-down" data-action="down">▼</div>
+        </div>        <div class="btn-rot" data-action="rotate">ROTATE</div>
+    </div>
+    
+    <div class="action-row">
+        <button class="btn btn-reset" onclick="game.reset()">RESET</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
