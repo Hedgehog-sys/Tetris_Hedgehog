@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Matrix Ultimate Console FIXED</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="matrix-bg"></canvas>
+<div class="console-body">
+    <div id="overlay">
+        <h1 style="color:#0f0">MATRIX ULTIMATE</h1>
+        <div class="label">HIGH SCORE</div>
+        <div id="highscore_overlay" class="value top" style="font-size: 30px; margin-bottom: 10px;">0</div>
+        <div class="label">SET START LEVEL</div>
+        <input type="number" id="startLevel" value="0" min="0" max="20">
+        <button class="start-btn" onclick="startGame()">INITIALIZE</button>
+    </div>
+    <div class="pause-msg" id="pauseLabel">SYSTEM PAUSED</div>
+    <div class="screen-frame">
+        <canvas id="tetris" width="200" height="400"></canvas>
+        <div class="side-info">
+            <div class="box"><div class="label">NEXT</div><canvas id="next" width="80" height="80"></canvas></div>
+            <div class="box"><div class="label">TOP</div><div id="highscore" class="value top">0</div></div>
+            <div class="box"><div class="label">SCORE</div><div id="score" class="value">0</div></div>
+            <div class="box"><div class="label">LEVEL</div><div id="level" class="value">0</div></div>
+            <div id="speed-up-container" style="height: 60px; width: 10px; background: #111; border: 1px solid #004400; align-self: center; position: relative;">
+                <div id="speed-bar" style="position: absolute; bottom: 0; width: 100%; background: #0f0; height: 0%; transition: height 0.3s;"></div>
+            </div>
+            <button onclick="togglePause()" style="background:#444; color:#fff; border:none; padding:8px; border-radius:4px; margin-top:auto; cursor:pointer;">PAUSE</button>
+        </div>
+    </div>
+    <div class="controls-area">
+        <div id="brand-matrix" style="position: absolute; right: 45px; top: 320px; color: #004400; font-weight: bold; font-size: 18px; letter-spacing: 2px; pointer-events: none;">MATRIX</div>
+        <div class="d-pad">
+            <div class="d-btn d-up" onmousedown="playerHardDrop()" ontouchstart="playerHardDrop()">⚡</div>
+            <div class="d-btn d-left" id="btn-left">◀</div>
+            <div style="background:transparent"></div>
+            <div class="d-btn d-right" id="btn-right">▶</div>
+            <div class="d-btn d-down" id="btn-down">▼</div>
+        </div>
+        <div class="action-btns"><div class="btn-rot" id="btn-rotate">ROTATE</div></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
